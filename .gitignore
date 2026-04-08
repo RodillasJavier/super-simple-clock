@@ -1,0 +1,5 @@
+*.log
+
+# Agent files
+CLAUDE.md
+AGENTS.md
