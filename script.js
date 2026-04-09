@@ -327,12 +327,22 @@ function toggleFullscreen() {
 }
 
 // ─── Event Wiring ──────────────────────────────────────────────────────────
-modeBtns.forEach((b) => b.addEventListener('click', () => switchMode(b.dataset.mode)));
-playBtn.addEventListener('click', toggleTimer);
-resetBtn.addEventListener('click', resetTimer);
-timeDisplay.addEventListener('click', openEdit);
-lblFocus.addEventListener('click', () => switchPhase('focus'));
-lblBreak.addEventListener('click', () => switchPhase('break'));
+// addTap wires both click and touchend so iOS Safari responds immediately
+// without waiting for the 300ms click delay.
+function addTap(el, handler) {
+  el.addEventListener('click', handler);
+  el.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    handler(e);
+  }, { passive: false });
+}
+
+modeBtns.forEach((b) => addTap(b, () => switchMode(b.dataset.mode)));
+addTap(playBtn, toggleTimer);
+addTap(resetBtn, resetTimer);
+addTap(timeDisplay, openEdit);
+addTap(lblFocus, () => switchPhase('focus'));
+addTap(lblBreak, () => switchPhase('break'));
 
 editMm.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
@@ -370,7 +380,7 @@ editSs.addEventListener('blur', onInputBlur);
 editMm.addEventListener('focus', () => clearTimeout(blurTimer));
 editSs.addEventListener('focus', () => clearTimeout(blurTimer));
 
-fsBtn.addEventListener('click', toggleFullscreen);
+addTap(fsBtn, toggleFullscreen);
 document.addEventListener('fullscreenchange', updateFsIcon);
 document.addEventListener('webkitfullscreenchange', updateFsIcon);
 
