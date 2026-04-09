@@ -1,44 +1,44 @@
 // ─── State ─────────────────────────────────────────────────────────────────
-let mode     = 'pomodoro';  // 'pomodoro' | 'stopwatch'
-let phase    = 'focus';     // 'focus' | 'break'
-let isActive  = false;
+let mode = 'pomodoro'; // 'pomodoro' | 'stopwatch'
+let phase = 'focus'; // 'focus' | 'break'
+let isActive = false;
 let intervalId = null;
 let notifAsked = false;
-let isEditing  = false;
+let isEditing = false;
 
 // Pomodoro
 let focusDurSec = 25 * 60;
-let breakDurSec = 5  * 60;
-let phaseDurSec = focusDurSec;  // current phase total (editable baseline)
+let breakDurSec = 5 * 60;
+let phaseDurSec = focusDurSec; // current phase total (editable baseline)
 let remainingMs = focusDurSec * 1000;
-let endTime     = null;         // Date.now() + remainingMs when running
-let pomCount    = 0;
+let endTime = null; // Date.now() + remainingMs when running
+let pomCount = 0;
 
 // Stopwatch
 let swAccMs = 0;
-let swT0    = null;
+let swT0 = null;
 
 // ─── DOM ───────────────────────────────────────────────────────────────────
-const modePill     = document.getElementById('mode-pill');
-const modeBtns     = document.querySelectorAll('.mode-btn');
-const lblFocus     = document.getElementById('lbl-focus');
-const lblBreak     = document.getElementById('lbl-break');
-const phaseLabel   = document.getElementById('phase-label');
-const timeDisplay  = document.getElementById('time-display');
-const timeEdit     = document.getElementById('time-edit');
-const editMm       = document.getElementById('edit-mm');
-const editSs       = document.getElementById('edit-ss');
-const completedEl  = document.getElementById('completed-count');
-const barTrack     = document.getElementById('bar-track');
-const barFill      = document.getElementById('bar-fill');
+const modePill = document.getElementById('mode-pill');
+const modeBtns = document.querySelectorAll('.mode-btn');
+const lblFocus = document.getElementById('lbl-focus');
+const lblBreak = document.getElementById('lbl-break');
+const phaseLabel = document.getElementById('phase-label');
+const timeDisplay = document.getElementById('time-display');
+const timeEdit = document.getElementById('time-edit');
+const editMm = document.getElementById('edit-mm');
+const editSs = document.getElementById('edit-ss');
+const completedEl = document.getElementById('completed-count');
+const barTrack = document.getElementById('bar-track');
+const barFill = document.getElementById('bar-fill');
 const barFillInner = document.getElementById('bar-fill-inner');
-const barGlow      = document.getElementById('bar-glow');
-const playBtn      = document.getElementById('play-btn');
-const iconPlay     = document.getElementById('icon-play');
-const iconPause    = document.getElementById('icon-pause');
-const resetBtn     = document.getElementById('reset-btn');
-const fsBtn        = document.getElementById('fs-btn');
-const iconExpand   = document.getElementById('icon-expand');
+const barGlow = document.getElementById('bar-glow');
+const playBtn = document.getElementById('play-btn');
+const iconPlay = document.getElementById('icon-play');
+const iconPause = document.getElementById('icon-pause');
+const resetBtn = document.getElementById('reset-btn');
+const fsBtn = document.getElementById('fs-btn');
+const iconExpand = document.getElementById('icon-expand');
 const iconCompress = document.getElementById('icon-compress');
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ function fmt(ms) {
   const s = total % 60;
   const mm = String(m).padStart(2, '0');
   const ss = String(s).padStart(2, '0');
-  return h > 0 ? `${String(h).padStart(2,'0')}:${mm}:${ss}` : `${mm}:${ss}`;
+  return h > 0 ? `${String(h).padStart(2, '0')}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
 function lerp(a, b, t) {
@@ -69,13 +69,11 @@ function lerp(a, b, t) {
 
 function barColor(p) {
   const neutral = [100, 116, 139];
-  const amber   = [245, 158,  11];
-  const red     = [239,  68,  68];
-  if (p < 0.80) return `rgb(${neutral})`;
-  const t = (p - 0.80) / 0.20;
-  const c = t < 0.5
-    ? lerp(neutral, amber, t * 2)
-    : lerp(amber,   red,  (t - 0.5) * 2);
+  const amber = [252, 211, 77];
+  const red = [248, 113, 113];
+  if (p < 0.8) return `rgb(${neutral})`;
+  const t = (p - 0.8) / 0.2;
+  const c = t < 0.5 ? lerp(neutral, amber, t * 2) : lerp(amber, red, (t - 0.5) * 2);
   return `rgb(${c})`;
 }
 
@@ -84,23 +82,23 @@ function render() {
   if (isEditing) return;
 
   if (mode === 'pomodoro') {
-    const ms  = Math.max(0, remainingMs);
+    const ms = Math.max(0, remainingMs);
     const str = fmt(ms);
 
     timeDisplay.textContent = str;
     completedEl.textContent = `Completed: ${pomCount}`;
 
     const progress = Math.max(0, Math.min(1, 1 - ms / (phaseDurSec * 1000)));
-    const pct   = progress * 100;
+    const pct = progress * 100;
     const color = barColor(progress);
 
-    barFill.style.width           = pct + '%';
+    barFill.style.width = pct + '%';
     barFillInner.style.background = color;
 
     const showGlow = pct > 0.5;
-    barGlow.style.opacity    = showGlow ? (isActive ? '0.8' : '0.4') : '0';
+    barGlow.style.opacity = showGlow ? (isActive ? '0.8' : '0.4') : '0';
     barGlow.style.background = color;
-    barGlow.style.boxShadow  = `0 0 20px 8px ${color}`;
+    barGlow.style.boxShadow = `0 0 20px 8px ${color}`;
 
     barTrack.classList.remove('sw-active');
 
@@ -108,16 +106,13 @@ function render() {
     lblBreak.classList.toggle('on', phase === 'break');
 
     document.title = `${str} — ${phase === 'focus' ? 'Focus' : 'Break'}`;
-
   } else {
-    const elapsed = isActive && swT0 !== null
-      ? swAccMs + (Date.now() - swT0)
-      : swAccMs;
+    const elapsed = isActive && swT0 !== null ? swAccMs + (Date.now() - swT0) : swAccMs;
     const str = fmt(elapsed);
 
     timeDisplay.textContent = str;
-    barFill.style.width     = '0%';
-    barGlow.style.opacity   = '0';
+    barFill.style.width = '0%';
+    barGlow.style.opacity = '0';
     barTrack.classList.toggle('sw-active', isActive);
 
     document.title = `${str} — Stopwatch`;
@@ -136,7 +131,10 @@ function tick() {
 
   if (mode === 'pomodoro') {
     const rem = endTime - Date.now();
-    if (rem <= 0) { phaseComplete(); return; }
+    if (rem <= 0) {
+      phaseComplete();
+      return;
+    }
     remainingMs = rem;
   }
   render();
@@ -147,23 +145,24 @@ function phaseComplete() {
   const done = phase;
 
   if (Notification.permission === 'granted') {
-    const msg = done === 'focus'
-      ? 'Focus complete! Time for a break.'
-      : 'Break over! Back to focus.';
-    try { new Notification(msg, { body: 'Super Simple Clock' }); } catch {}
+    const msg =
+      done === 'focus' ? 'Focus complete! Time for a break.' : 'Break over! Back to focus.';
+    try {
+      new Notification(msg, { body: 'Super Simple Clock' });
+    } catch {}
   }
 
   if (done === 'focus') {
     pomCount++;
-    phase       = 'break';
+    phase = 'break';
     phaseDurSec = breakDurSec;
   } else {
-    phase       = 'focus';
+    phase = 'focus';
     phaseDurSec = focusDurSec;
   }
 
   remainingMs = phaseDurSec * 1000;
-  endTime     = Date.now() + remainingMs;
+  endTime = Date.now() + remainingMs;
 
   render();
 }
@@ -206,7 +205,7 @@ function resetTimer() {
     remainingMs = phaseDurSec * 1000;
   } else {
     swAccMs = 0;
-    swT0    = null;
+    swT0 = null;
   }
 
   render();
@@ -220,7 +219,7 @@ function switchMode(newMode) {
   swT0 = null;
   mode = newMode;
 
-  modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === newMode));
+  modeBtns.forEach((b) => b.classList.toggle('active', b.dataset.mode === newMode));
 
   if (newMode === 'stopwatch') {
     modePill.style.left = '50%';
@@ -243,7 +242,7 @@ function switchMode(newMode) {
 function switchPhase(newPhase) {
   if (mode !== 'pomodoro' || phase === newPhase) return;
   stopTiming();
-  phase       = newPhase;
+  phase = newPhase;
   phaseDurSec = newPhase === 'focus' ? focusDurSec : breakDurSec;
   remainingMs = phaseDurSec * 1000;
   render();
@@ -274,10 +273,13 @@ function confirmEdit() {
   ss = Math.max(0, Math.min(59, ss));
 
   const newSec = mm * 60 + ss;
-  if (newSec === 0) { cancelEdit(); return; }
+  if (newSec === 0) {
+    cancelEdit();
+    return;
+  }
 
   if (phase === 'focus') focusDurSec = newSec;
-  else                   breakDurSec = newSec;
+  else breakDurSec = newSec;
   phaseDurSec = newSec;
 
   const newMs = newSec * 1000;
@@ -285,7 +287,7 @@ function confirmEdit() {
     remainingMs = newMs;
   } else if (remainingMs > newMs) {
     remainingMs = newMs;
-    endTime     = Date.now() + remainingMs;
+    endTime = Date.now() + remainingMs;
   }
 
   closeEdit();
@@ -325,43 +327,54 @@ function toggleFullscreen() {
 }
 
 // ─── Event Wiring ──────────────────────────────────────────────────────────
-modeBtns.forEach(b => b.addEventListener('click', () => switchMode(b.dataset.mode)));
-playBtn .addEventListener('click', toggleTimer);
+modeBtns.forEach((b) => b.addEventListener('click', () => switchMode(b.dataset.mode)));
+playBtn.addEventListener('click', toggleTimer);
 resetBtn.addEventListener('click', resetTimer);
 timeDisplay.addEventListener('click', openEdit);
 lblFocus.addEventListener('click', () => switchPhase('focus'));
 lblBreak.addEventListener('click', () => switchPhase('break'));
 
-editMm.addEventListener('keydown', e => {
-  if (e.key === 'Enter')  { e.preventDefault(); editSs.focus(); editSs.select(); }
-  if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+editMm.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    editSs.focus();
+    editSs.select();
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    cancelEdit();
+  }
 });
-editSs.addEventListener('keydown', e => {
-  if (e.key === 'Enter')  { e.preventDefault(); confirmEdit(); }
-  if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+editSs.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    confirmEdit();
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    cancelEdit();
+  }
 });
 
 // small delay so tabbing between the two inputs doesn't fire confirm prematurely
 let blurTimer = null;
 function onInputBlur() {
   blurTimer = setTimeout(() => {
-    if (isEditing &&
-        document.activeElement !== editMm &&
-        document.activeElement !== editSs) {
+    if (isEditing && document.activeElement !== editMm && document.activeElement !== editSs) {
       confirmEdit();
     }
   }, 120);
 }
-editMm.addEventListener('blur',  onInputBlur);
-editSs.addEventListener('blur',  onInputBlur);
+editMm.addEventListener('blur', onInputBlur);
+editSs.addEventListener('blur', onInputBlur);
 editMm.addEventListener('focus', () => clearTimeout(blurTimer));
 editSs.addEventListener('focus', () => clearTimeout(blurTimer));
 
 fsBtn.addEventListener('click', toggleFullscreen);
-document.addEventListener('fullscreenchange',       updateFsIcon);
+document.addEventListener('fullscreenchange', updateFsIcon);
 document.addEventListener('webkitfullscreenchange', updateFsIcon);
 
-document.addEventListener('keydown', e => {
+document.addEventListener('keydown', (e) => {
   if (e.key === 'f' || e.key === 'F') {
     if (isEditing) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
