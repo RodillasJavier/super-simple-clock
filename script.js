@@ -144,7 +144,7 @@ function tick() {
 function phaseComplete() {
   const done = phase;
 
-  if (Notification.permission === 'granted') {
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     const msg =
       done === 'focus' ? 'Focus complete! Time for a break.' : 'Break over! Back to focus.';
     try {
@@ -178,7 +178,7 @@ function toggleTimer() {
     }
     stopTiming();
   } else {
-    if (!notifAsked && Notification.permission === 'default') {
+    if (!notifAsked && typeof Notification !== 'undefined' && Notification.permission === 'default') {
       notifAsked = true;
       Notification.requestPermission();
     }
