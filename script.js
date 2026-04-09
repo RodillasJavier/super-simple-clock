@@ -383,4 +383,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ─── Init ──────────────────────────────────────────────────────────────────
+// Hide fullscreen button on devices that don't support the API (e.g. iOS Safari)
+if (!document.documentElement.requestFullscreen && !document.documentElement.webkitRequestFullscreen) {
+  fsBtn.style.display = 'none';
+}
+
 render();
