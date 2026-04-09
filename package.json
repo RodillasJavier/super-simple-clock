@@ -3,12 +3,17 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "lint": "eslint script.js && htmlhint index.html"
+    "lint":   "eslint script.js index.html",
+    "format": "prettier --write index.html script.js",
+    "check":  "prettier --check index.html script.js && eslint script.js index.html"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-html": "^8.0.0",
     "globals": "^15.0.0",
-    "htmlhint": "^1.0.0"
+    "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.6.0"
   }
 }
